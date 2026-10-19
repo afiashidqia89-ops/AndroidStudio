@@ -1,0 +1,12 @@
+{
+  "appId": "com.ksa1g.retensi",
+  "appName": "Retensi KSA1G",
+  "webDir": "www",
+  "version": "1.0.0",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": true
+  }
+}

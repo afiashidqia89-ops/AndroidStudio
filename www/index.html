@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="id"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Retensi Pemanen — KSA1G</title>
+<meta name="theme-color" content="#050b0f">
+<meta name="format-detection" content="telephone=no">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="css/app.css">
+</head><body>
+<div id="app">
+
+  <!-- ===== BILAH ATAS ===== -->
+  <header class="appbar">
+    <div class="ab-row">
+      <div class="ab-title">
+        <h1>Retensi Pemanen</h1>
+        <span class="ab-sub">Estate KSA1G · <b id="abPeriod">–</b></span>
+      </div>
+      <button class="ab-sync" id="abSync" type="button">
+        <i class="dot"></i><span id="abSyncTxt">Data awal</span>
+      </button>
+    </div>
+    <div class="ab-filterrow">
+      <span class="ab-fsumtxt" id="in">Memuat…</span>
+      <button class="fbtn" id="btnFilter" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>
+        Filter
+      </button>
+    </div>
+  </header>
+
+  <!-- ===== KONTEN (3 TAB) ===== -->
+  <main id="main">
+
+    <section class="page active" id="page-ringkasan">
+      <div class="kpis" id="kpi"></div>
+      <div class="stack" id="g"></div>
+    </section>
+
+    <section class="page" id="page-pemanen">
+      <div class="pbar">
+        <div class="psearch">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input id="q" type="search" placeholder="Cari nama / NIK…" autocomplete="off">
+        </div>
+        <div class="prow">
+          <select id="fla" aria-label="Afdeling"></select>
+          <select id="fc" aria-label="Kategori risiko">
+            <option value="-1">Semua risiko</option>
+            <option value="0">Tinggi</option>
+            <option value="1">Sedang</option>
+            <option value="2">Rendah</option>
+          </select>
+        </div>
+      </div>
+      <div class="pcount sub" id="pcount"></div>
+      <div class="plist" id="plist"></div>
+    </section>
+
+    <section class="page" id="page-update">
+      <div class="stack">
+
+        <div class="c">
+          <h2>Status Data</h2>
+          <div class="lastline" id="lastup">Belum ada unggahan pada sesi ini</div>
+          <div class="kv2" id="upmeta"></div>
+        </div>
+
+        <div class="c">
+          <h2>Sync Google Spreadsheet</h2>
+          <div class="sub">Tempel tautan spreadsheet yang dibagikan <b>“Siapa saja yang memiliki tautan – Pelihat”</b>. Nama tab harus sama dengan sheet template (Pemanen, Bulanan, dst.).</div>
+          <input id="gurl" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://docs.google.com/spreadsheets/d/…">
+          <div class="btnrow">
+            <button id="gs" class="btn pri" type="button">⟳ Sync Sekarang</button>
+            <a id="gopen" class="btn gh" href="#" target="_blank" rel="noopener" hidden>Buka Sheet ↗</a>
+          </div>
+          <label class="chk"><input type="checkbox" id="gauto"> Sync otomatis saat aplikasi dibuka</label>
+          <div class="sub statline" id="gsst"></div>
+        </div>
+
+        <div class="c">
+          <h2>Update dari Excel</h2>
+          <div class="sub">Pakai template resmi agar format kolom sesuai. Sheet yang tidak ada pada file akan diabaikan (data lama tetap).</div>
+          <input type="file" id="up" accept=".xlsx,.xls,.csv" hidden>
+          <div class="btnrow">
+            <label class="btn pri" for="up">⬆ Pilih File Excel</label>
+            <button id="dt" class="btn gh" type="button">⬇ Template</button>
+          </div>
+          <div class="btnrow">
+            <button id="dx" class="btn gh" type="button">⬇ Data (Excel)</button>
+            <button id="dc" class="btn gh" type="button">⬇ CSV terfilter</button>
+          </div>
+        </div>
+
+        <div class="c">
+          <h2>Kelola Data</h2>
+          <div class="btnrow">
+            <button id="du" class="btn gh" type="button">↩ Urungkan update</button>
+            <button id="dr" class="btn gh" type="button">⟲ Data awal</button>
+          </div>
+          <div class="btnrow"><button id="ds" class="btn gh" type="button">💾 Simpan dashboard (HTML)</button></div>
+          <div class="sub statline" id="dst"></div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===== NAVIGASI BAWAH ===== -->
+  <nav class="nav">
+    <button class="nv on" data-t="ringkasan" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 20v-7M12 20V5M19 20v-11"/></svg>
+      <span>Ringkasan</span>
+    </button>
+    <button class="nv" data-t="pemanen" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3.4"/><path d="M2.8 20c.8-3.3 3.3-5.2 6.2-5.2s5.4 1.9 6.2 5.2"/><circle cx="17.4" cy="9.2" r="2.5"/><path d="M16.2 15.1c2.3.4 4.1 1.9 4.8 4.6"/></svg>
+      <span>Pemanen</span>
+    </button>
+    <button class="nv" data-t="update" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-2.64-6.36L21 8"/><path d="M21 3v5h-5"/></svg>
+      <span>Update</span>
+    </button>
+  </nav>
+
+  <!-- ===== SHEET FILTER ===== -->
+  <div class="backdrop hidden" id="bdrop">
+    <div class="sheet" id="fsheet" role="dialog" aria-label="Filter tampilan">
+      <div class="sh-handle"></div>
+      <h2 class="sh-title">Filter Tampilan</h2>
+      <label class="fld">Afdeling<select id="fa"></select></label>
+      <label class="fld">Kontrak<select id="fk"><option value="*">Semua</option><option value="A">Akad</option><option value="N">Non-Akad</option></select></label>
+      <label class="fld">Status<select id="fs"><option value="">Semua</option><option value="C">CPL</option><option value="S">SGL</option></select></label>
+      <label class="fld">Periode<select id="fm"></select></label>
+      <div class="btnrow">
+        <button id="rs" class="btn gh" type="button">Reset</button>
+        <button id="fapply" class="btn pri" type="button">Terapkan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SHEET DETAIL PEMANEN (isi dinamis) ===== -->
+  <div class="backdrop hidden" id="dbdrop">
+    <div class="sheet" id="dsheet" role="dialog" aria-label="Detail pemanen">
+      <div class="sh-handle"></div>
+      <div id="dbody"></div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+  <div class="loading hidden" id="load"><div class="spin"></div><span id="loadtxt">Memproses…</span></div>
+
+</div>
+<script src="vendor/xlsx.full.min.js"></script>
+<script src="js/data.js"></script>
+<script src="js/core.js"></script>
+<script src="js/ui.js"></script>
+</body></html>
