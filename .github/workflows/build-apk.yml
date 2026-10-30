@@ -6,76 +6,39 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-apk:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout kode
         uses: actions/checkout@v4
 
-      - name: Setup Node.js 20
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Setup Java 17
+      - name: Setup JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: temurin
           java-version: '17'
 
-      # Runner GitHub (ubuntu-latest) sudah memuat Android SDK lengkap
-      # (platform-tools, build-tools 34.0.0, platforms;android-34, cmdline-tools).
-      # Kita hanya perlu menerima lisensinya — TANPA android-actions/setup-android,
-      # yang terkenal gagal saat tahap lisensi (lihat log build yang gagal).
-      - name: Terima lisensi Android SDK (bawaan runner)
+      - name: Setup Gradle 8.7
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Siapkan debug keystore (jaga-jaga)
         run: |
-          SDKMANAGER="$(command -v sdkmanager || true)"
-          if [ -z "$SDKMANAGER" ]; then
-            SDKMANAGER="$(ls "$ANDROID_HOME"/cmdline-tools/*/bin/sdkmanager 2>/dev/null | head -n 1)"
+          mkdir -p ~/.android
+          if [ ! -f ~/.android/debug.keystore ]; then
+            keytool -genkeypair -v -keystore ~/.android/debug.keystore \
+              -storepass android -alias androiddebugkey -keypass android \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -dname "CN=Android Debug,O=Android,C=US"
           fi
-          if [ -z "$SDKMANAGER" ]; then
-            echo "sdkmanager tidak ditemukan di runner, mengunduh command line tools..."
-            mkdir -p "$HOME/android-sdk/cmdline-tools"
-            curl -fsSL https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -o /tmp/clt.zip
-            unzip -q /tmp/clt.zip -d "$HOME/android-sdk/cmdline-tools"
-            mv "$HOME/android-sdk/cmdline-tools/cmdline-tools" "$HOME/android-sdk/cmdline-tools/latest"
-            SDKMANAGER="$HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager"
-            echo "ANDROID_HOME=$HOME/android-sdk" >> "$GITHUB_ENV"
-            echo "ANDROID_SDK_ROOT=$HOME/android-sdk" >> "$GITHUB_ENV"
-          fi
-          echo "Memakai sdkmanager: $SDKMANAGER"
-          yes | "$SDKMANAGER" --licenses > /dev/null || true
-          "$SDKMANAGER" "platform-tools" "platforms;android-34" "build-tools;34.0.0" > /dev/null || true
-          echo "Lisensi Android SDK siap."
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Tambahkan platform Android (jika belum ada)
-        run: |
-          if [ ! -d android ]; then
-            npx cap add android
-          fi
-
-      - name: Pasang ikon aplikasi
-        run: |
-          if [ -f scripts/install-icons.sh ]; then
-            bash scripts/install-icons.sh || true
-          fi
-
-      - name: Sinkronkan web assets
-        run: npx cap sync android
 
       - name: Build APK (Debug)
-        run: |
-          cd android
-          chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon --stacktrace
+        working-directory: android
+        run: gradle assembleDebug --no-daemon
 
-      - name: Upload APK ke Artifacts
+      - name: Upload hasil APK
         uses: actions/upload-artifact@v4
         with:
-          name: Retensi-KSA1G-APK
+          name: Tune UP-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
-          if-no-files-found: error
-          retention-days: 90
