@@ -1,5 +1,14 @@
-node_modules/
-android/
+# Gradle / Android
+.gradle/
+build/
+app/build/
+local.properties
+*.iml
+.idea/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Sistem
 .DS_Store
-*.log
 Thumbs.db
